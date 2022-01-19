@@ -1,0 +1,4 @@
+<Entity
+    Name="Teleporter"
+    Script="Scripts/Entities/Teleporter.lua"
+/>
