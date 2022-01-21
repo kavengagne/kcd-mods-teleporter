@@ -21,20 +21,20 @@ local seeAlso = "$3See also:\n" ..
 
 teleport_help = {
     generateTeleportPlaces = function(places)
-        local nameLen = kgutil.getMax(kgutil.map(kgutil.getValues(places, "name"), string.len)) + 2
-        local keyLen = kgutil.getMax(kgutil.map(kgutil.getKeys(places), string.len)) + 2
+        local nameLen = kgutil.max(kgutil.map(kgutil.values(places, "name"), string.len)) + 2
+        local keyLen = kgutil.max(kgutil.map(kgutil.keys(places), string.len)) + 2
         local help = "$3Supported places (case insensitive).\n\n" ..
                      string.format("  $3%s%s%s", kgutil.padRight("Name", nameLen), kgutil.padRight("Place", keyLen), "Alternate\n")
         for key,value in pairs(places) do
-            local altLocations = kgutil.filter(kgutil.getKeys(value.locations), function(item) return item.value ~= "IN" end)
-            local altLocString = kgutil.toLower(table.concat(altLocations, ", "))
-            if table.getn(altLocations) > 0 then
+            local altLocations = kgutil.filter(kgutil.keys(value.locations), function(item) return item.value ~= "IN" end)
+            local altLocString = kgutil.lower(table.concat(altLocations, ", "))
+            if #altLocations > 0 then
                 altLocString = "$1[$8" .. altLocString .. "$1]"
             end
             help = help .. string.format(
                 "  $1%s$8%s%s\n",
                 kgutil.padRight(value.name, nameLen),
-                kgutil.padRight(kgutil.toLower(key), keyLen),
+                kgutil.padRight(kgutil.lower(key), keyLen),
                 altLocString)
         end
         return help

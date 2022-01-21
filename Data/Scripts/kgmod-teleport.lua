@@ -6,8 +6,8 @@ local teleporterName = "Teleporter100"
 
 local function makePlace(place, location, isExact)
     return {
-        place = kgutil.toUpper(place.place),
-        name = string.format("%s %s", place.name, kgutil.toLower(location)),
+        place = kgutil.upper(place.place),
+        name = string.format("%s %s", place.name, kgutil.lower(location)),
         location = place.locations[location],
         locationName = location,
         isExact = isExact
@@ -16,7 +16,7 @@ end
 
 
 local function addPlace(places, keywords, position)
-    local terms = kgutil.split(kgutil.toUpper(keywords))
+    local terms = kgutil.split(kgutil.upper(keywords))
     local place = terms[1]
     local location = terms[2]
     local exact = places[place]
@@ -27,7 +27,7 @@ local function addPlace(places, keywords, position)
         exact.locations[location] = position
     else
         places[place] = {
-            place = kgutil.toUpper(place),
+            place = kgutil.upper(place),
             name = kgutil.capitalize(place),
             locations = {
                 IN = position
@@ -38,7 +38,7 @@ end
 
 
 local function findPlace(places, keywords)
-    local terms = kgutil.split(kgutil.toUpper(keywords))
+    local terms = kgutil.split(kgutil.upper(keywords))
     local place = terms[1]
     local location = terms[2]
     local found = {}
@@ -54,7 +54,7 @@ local function findPlace(places, keywords)
     else -- starts with
         place = string.format("^%s", place) -- startswith matcher
         for key,value in pairs(places) do
-            if kgutil.toUpper(key):find(place) ~= nil then
+            if kgutil.upper(key):find(place) ~= nil then
                 if location ~= nil then
                     if value.locations[location] ~= nil then
                         table.insert(found, makePlace(value, location, false))
@@ -93,9 +93,9 @@ teleport = {
             return
         end
         local found = findPlace(places, keywords)
-        if table.getn(found) > 1 then
+        if #found > 1 then
             kgutil.logError("Too many locations found: %s.", table.concat(kgutil.map(found, function(item) return item.name end), ", "))
-        elseif table.getn(found) < 1 then
+        elseif #found < 1 then
             kgutil.logError("Place not found. Type 'tpl' for the list of supported places.")
         elseif player.human:IsMounted() then
             kgutil.logError("Player is Mounted. Use 'tpd %s' to Dismount and Teleport.", keywords)
@@ -122,7 +122,7 @@ teleport = {
             return
         end
         local found = findPlace(places, keywords)
-        if table.getn(found) > 0 and found[1].isExact then
+        if #found > 0 and found[1].isExact then
             kgutil.logError("Place name already exists: %s.", keywords)
         elseif player.human:IsMounted() then
             kgutil.logError("Player is Mounted. Please Dismount before creating Teleport.")
@@ -141,19 +141,16 @@ teleport = {
             return
         end
         local found = findPlace(places, keywords)
-        if table.getn(found) > 1 then
+        if #found > 1 then
             kgutil.logError("Too many locations found: %s.", table.concat(kgutil.map(found, function(item) return item.name end), ", "))
-        elseif table.getn(found) < 1 then
+        elseif #found < 1 then
             kgutil.logError("Place not found. Type 'tpl' for the list of supported places.")
         elseif not found[1].isExact then
             kgutil.logError("Place name must be exact. Type 'tpl' for the list of supported places.")
-        -- elseif table.getn(kgutil.getKeys(places[found[1].place].locations)) > 1 then
-        --     places[found[1].place].locations[found[1].locationName] = nil
-        --     kgutil.logInfo("Teleport location removed: %s", kgutil.capitalize(keywords))
         else
-            -- TODO: Effacer item pour vrai
             places[found[1].place] = nil
             kgutil.logInfo("Teleport place removed: %s", kgutil.capitalize(keywords))
+            Dump(getTeleporterInstance().Properties.Places)
         end
     end,
     

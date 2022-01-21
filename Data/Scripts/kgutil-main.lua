@@ -7,20 +7,29 @@ kgutil = {
         fn(message)
     end,
     
-    getKeys = function(tbl)
-        local keys = {}
-        for key,_ in pairs(tbl) do
-            table.insert(keys, key)
+    indexOf = function(array, value)
+        for i, v in ipairs(array) do
+            if v == value then
+                return i
+            end
         end
-        return keys
+        return nil
+    end,
+
+    keys = function(tbl)
+        local ks = {}
+        for key,_ in pairs(tbl) do
+            table.insert(ks, key)
+        end
+        return ks
     end,
     
-    getValues = function(tbl, prop)
-        local values = {}
+    values = function(tbl, prop)
+        local vals = {}
         for _,value in pairs(tbl) do
-            table.insert(values, value[prop])
+            table.insert(vals, value[prop])
         end
-        return values
+        return vals
     end,
     
     map = function(tbl, f)
@@ -41,7 +50,7 @@ kgutil = {
         return t
     end,
     
-    getMax = function(tbl)
+    max = function(tbl)
         local maxx = 0
         for _,value in pairs(tbl) do
             if value > maxx then
@@ -80,7 +89,7 @@ kgutil = {
         end
     end,
     
-    toUpper = function(str)
+    upper = function(str)
         if not kgutil.isBlank(str) then
             -- string.upper fails if passed nil
             return string.upper(str)
@@ -89,7 +98,7 @@ kgutil = {
         end
     end,
     
-    toLower = function(str)
+    lower = function(str)
         if not kgutil.isBlank(str) then
             -- string.lower fails if passed nil
             return string.lower(str)
@@ -99,7 +108,7 @@ kgutil = {
     end,
     
     capitalize = function(str)
-        return (kgutil.toLower(str):gsub("^%l", string.upper))
+        return (kgutil.lower(str):gsub("^%l", string.upper))
     end,
     
     split = function(str, chr)
