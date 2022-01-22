@@ -1,13 +1,17 @@
-Script.ReloadScript("Scripts/kgutil-main.lua")
-Script.ReloadScript("Scripts/kgmod-teleport-help.lua")
+Script.ReloadScript("Scripts/Utils/Util.lua")
+Script.ReloadScript("Scripts/Utils/LogUtil.lua")
+Script.ReloadScript("Scripts/Utils/Linq.lua")
+Script.ReloadScript("Scripts/Utils/StringUtil.lua")
+Script.ReloadScript("Scripts/Mod/TeleportHelp.lua")
 
 
 local teleporterName = "Teleporter100"
 
+
 local function makePlace(place, location, isExact)
     return {
-        place = kgutil.upper(place.place),
-        name = string.format("%s %s", place.name, kgutil.lower(location)),
+        place = StringUtil.Upper(place.place),
+        name = string.format("%s %s", place.name, StringUtil.Lower(location)),
         location = place.locations[location],
         locationName = location,
         isExact = isExact
@@ -16,7 +20,7 @@ end
 
 
 local function addPlace(places, keywords, position)
-    local terms = kgutil.split(kgutil.upper(keywords))
+    local terms = StringUtil.Split(StringUtil.Upper(keywords))
     local place = terms[1]
     local location = terms[2]
     local exact = places[place]
@@ -27,8 +31,8 @@ local function addPlace(places, keywords, position)
         exact.locations[location] = position
     else
         places[place] = {
-            place = kgutil.upper(place),
-            name = kgutil.capitalize(place),
+            place = StringUtil.Upper(place),
+            name = StringUtil.Capitalize(place),
             locations = {
                 IN = position
             }
@@ -38,7 +42,7 @@ end
 
 
 local function findPlace(places, keywords)
-    local terms = kgutil.split(kgutil.upper(keywords))
+    local terms = StringUtil.Split(StringUtil.Upper(keywords))
     local place = terms[1]
     local location = terms[2]
     local found = {}
@@ -54,7 +58,7 @@ local function findPlace(places, keywords)
     else -- starts with
         place = string.format("^%s", place) -- startswith matcher
         for key,value in pairs(places) do
-            if kgutil.upper(key):find(place) ~= nil then
+            if StringUtil.Upper(key):find(place) ~= nil then
                 if location ~= nil then
                     if value.locations[location] ~= nil then
                         table.insert(found, makePlace(value, location, false))
@@ -79,135 +83,137 @@ local function isTeleporterCreated()
     if entity ~= nil then
         return true
     end
-    kgutil.logError("Teleporter is not initialized. Type 'tpinit' to proceed.")
+    LogUtil.LogError("Teleporter is not initialized. Type 'tpinit' to proceed.")
     return false
 end
 
 
-teleport = {
-    cmdTeleport = function(keywords)
+Teleport = {
+    CmdTeleport = function(keywords)
         if not isTeleporterCreated() then return end
         local places = getTeleporterInstance().Properties.Places
-        if kgutil.isBlank(keywords) then
-            kgutil.logError("Place name cannot be empty.")
+        if Util.IsBlank(keywords) then
+            LogUtil.LogError("Place name cannot be empty.")
             return
         end
         local found = findPlace(places, keywords)
         if #found > 1 then
-            kgutil.logError("Too many locations found: %s.", table.concat(kgutil.map(found, function(item) return item.name end), ", "))
+            LogUtil.LogError("Too many locations found: %s.", table.concat(Linq.Select(found, function(item) return item.name end), ", "))
         elseif #found < 1 then
-            kgutil.logError("Place not found. Type 'tpl' for the list of supported places.")
+            LogUtil.LogError("Place not found. Type 'tpl' for the list of supported places.")
         elseif player.human:IsMounted() then
-            kgutil.logError("Player is Mounted. Use 'tpd %s' to Dismount and Teleport.", keywords)
+            LogUtil.LogError("Player is Mounted. Use 'tpd %s' to Dismount and Teleport.", keywords)
         else
             local nplace = found[1]
             player:SetWorldPos({ x = nplace.location.x, y = nplace.location.y, z = nplace.location.z })
-            kgutil.logInfo("Teleported player to %s (%s).", nplace.name, kgutil.formatCoords(nplace.location.x, nplace.location.y, nplace.location.z))
+            LogUtil.LogInfo("Teleported player to %s (%s).", nplace.name, Util.FormatCoords(nplace.location.x, nplace.location.y, nplace.location.z))
         end
     end,
     
-    cmdDismountAndTeleport = function(keywords)
+    CmdDismountAndTeleport = function(keywords)
         if not isTeleporterCreated() then return end
         if player.human:IsMounted() then
             player.human:ForceDismount()
         end
-        teleport.cmdTeleport(keywords)
+        Teleport.CmdTeleport(keywords)
     end,
     
-    cmdCreateTeleport = function(keywords)
+    CmdCreateTeleport = function(keywords)
         if not isTeleporterCreated() then return end
         local places = getTeleporterInstance().Properties.Places
-        if kgutil.isBlank(keywords) then
-            kgutil.logError("Place name cannot be empty.")
+        if Util.IsBlank(keywords) then
+            LogUtil.LogError("Place name cannot be empty.")
             return
         end
         local found = findPlace(places, keywords)
         if #found > 0 and found[1].isExact then
-            kgutil.logError("Place name already exists: %s.", keywords)
+            LogUtil.LogError("Place name already exists: %s.", keywords)
         elseif player.human:IsMounted() then
-            kgutil.logError("Player is Mounted. Please Dismount before creating Teleport.")
+            LogUtil.LogError("Player is Mounted. Please Dismount before creating Teleport.")
         else
             local pos = player:GetWorldPos()
             addPlace(places, keywords, pos)
-            kgutil.logInfo("Teleport place created: %s (%s)", kgutil.capitalize(keywords), kgutil.formatCoords(pos.x, pos.y, pos.z))
+            LogUtil.LogInfo("Teleport place created: %s (%s)", StringUtil.Capitalize(keywords), Util.FormatCoords(pos.x, pos.y, pos.z))
         end
     end,
 
-    cmdRemoveTeleport = function(keywords)
+    CmdRemoveTeleport = function(keywords)
         if not isTeleporterCreated() then return end
         local places = getTeleporterInstance().Properties.Places
-        if kgutil.isBlank(keywords) then
-            kgutil.logError("Place name cannot be empty.")
+        if Util.IsBlank(keywords) then
+            LogUtil.LogError("Place name cannot be empty.")
             return
         end
         local found = findPlace(places, keywords)
         if #found > 1 then
-            kgutil.logError("Too many locations found: %s.", table.concat(kgutil.map(found, function(item) return item.name end), ", "))
+            LogUtil.LogError("Too many locations found: %s.", table.concat(Linq.Select(found, function(item) return item.name end), ", "))
         elseif #found < 1 then
-            kgutil.logError("Place not found. Type 'tpl' for the list of supported places.")
+            LogUtil.LogError("Place not found. Type 'tpl' for the list of supported places.")
         elseif not found[1].isExact then
-            kgutil.logError("Place name must be exact. Type 'tpl' for the list of supported places.")
+            LogUtil.LogError("Place name must be exact. Type 'tpl' for the list of supported places.")
         else
             places[found[1].place] = nil
-            kgutil.logInfo("Teleport place removed: %s", kgutil.capitalize(keywords))
+            LogUtil.LogInfo("Teleport place removed: %s", StringUtil.Capitalize(keywords))
             Dump(getTeleporterInstance().Properties.Places)
         end
     end,
     
-    cmdListTeleport = function()
+    CmdListTeleport = function()
         if not isTeleporterCreated() then return end
         local places = getTeleporterInstance().Properties.Places
-        local help = teleport_help.generateTeleportPlaces(places)
-        local tokens = kgutil.split(help, "[^\n]+")
+        local help = TeleportHelp.generateTeleportPlaces(places)
+        local tokens = StringUtil.Split(help, "[^\n]+")
         for k,v in pairs(tokens) do
-            kgutil.print(v)
+            LogUtil.Print(v)
         end
     end,
     
-    cmdLocation = function()
+    CmdLocation = function()
         local loc = player:GetWorldPos()
-        kgutil.logInfo("Player's location (%s)", kgutil.formatCoords(loc.x, loc.y, loc.z))
+        LogUtil.LogInfo("Player's location (%s)", Util.FormatCoords(loc.x, loc.y, loc.z))
     end,
     
-    cmdGetStatusTeleporter = function()
+    CmdGetStatusTeleporter = function()
         local entity = getTeleporterInstance()
         if entity == nil then
-            kgutil.logError("Teleporter not found. Type 'tpinit' to create it.")
+            LogUtil.LogError("Teleporter not found. Type 'tpinit' to create it.")
             return
         end
-        kgutil.logInfo("---------------------------------------------")
-        kgutil.logInfo("Teleporter Entity")
-        kgutil.logInfo("Name: %s (%d)", entity:GetName(), tostring(entity:GetRawId()))
-        kgutil.logInfo("Locations:")
+        LogUtil.LogInfo("---------------------------------------------")
+        LogUtil.LogInfo("Teleporter Entity")
+        LogUtil.LogInfo("Name: %s (%d)", entity:GetName(), tostring(entity:GetRawId()))
+        LogUtil.LogInfo("Locations:")
         for place,tbl in pairs(entity.Properties.Places) do
-            local coords = kgutil.map(tbl.locations, kgutil.formatCoords2)
+            local coords = Linq.Select(tbl.locations, function(loc)
+                return Util.FormatCoords(loc.x, loc.y, loc.z)
+            end)
             local locations = {}
             for k,v in pairs(coords) do
                 table.insert(locations, string.format("%s = %s", k, v))
             end
             local locs = table.concat(locations, ", ")
-            kgutil.logInfo("%s = (%s)", tostring(place), locs)
+            LogUtil.LogInfo("%s = (%s)", tostring(place), locs)
         end
     end,
     
-    cmdDestroyTeleporter = function()
+    CmdDestroyTeleporter = function()
         local entity = getTeleporterInstance()
         if entity ~= nil then
-            kgutil.logInfo("Teleporter Found. Destroying...")
+            LogUtil.LogInfo("Teleporter Found. Destroying...")
             System.RemoveEntity(entity.id)
-            kgutil.logInfo("Teleporter destroyed.")
+            LogUtil.LogInfo("Teleporter destroyed.")
         else
-            kgutil.logError("Teleporter not found.")
+            LogUtil.LogError("Teleporter not found.")
         end
     end,
 
-    cmdSpawnTeleporter = function()
+    CmdSpawnTeleporter = function()
         local entity = getTeleporterInstance()
         if entity ~= nil then
-            kgutil.logWarning("Teleporter already exists.")
-            teleport.cmdGetStatusTeleporter()
+            LogUtil.LogWarning("Teleporter already exists.")
+            Teleport.CmdGetStatusTeleporter()
         else
-            kgutil.logWarning("Teleporter not found. Creating...")
+            LogUtil.LogWarning("Teleporter not found. Creating...")
             local params = {
                 class = "Teleporter",
                 position = { x = 0, y = 0, z = 0 },
@@ -215,7 +221,7 @@ teleport = {
                 name = teleporterName
             }
             entity = System.SpawnEntity(params)
-            kgutil.logInfo("Teleporter created.")
+            LogUtil.LogInfo("Teleporter created.")
         end
         return entity
     end,

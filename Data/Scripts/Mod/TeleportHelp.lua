@@ -1,4 +1,6 @@
-Script.ReloadScript("Scripts/kgutil-main.lua")
+Script.ReloadScript("Scripts/Utils/TableUtil.lua")
+Script.ReloadScript("Scripts/Utils/Linq.lua")
+Script.ReloadScript("Scripts/Utils/StringUtil.lua")
 
 
 local tpSyntax = "$3Syntax:\n" ..
@@ -19,22 +21,22 @@ local seeAlso = "$3See also:\n" ..
                 "  $1tpinit, tpdestroy, tpstatus"
 
 
-teleport_help = {
+TeleportHelp = {
     generateTeleportPlaces = function(places)
-        local nameLen = kgutil.max(kgutil.map(kgutil.values(places, "name"), string.len)) + 2
-        local keyLen = kgutil.max(kgutil.map(kgutil.keys(places), string.len)) + 2
+        local nameLen = TableUtil.Max(Linq.Select(TableUtil.Values(places, "name"), string.len)) + 2
+        local keyLen = TableUtil.Max(Linq.Select(TableUtil.Keys(places), string.len)) + 2
         local help = "$3Supported places (case insensitive).\n\n" ..
-                     string.format("  $3%s%s%s", kgutil.padRight("Name", nameLen), kgutil.padRight("Place", keyLen), "Alternate\n")
+                     string.format("  $3%s%s%s", StringUtil.PadRight("Name", nameLen), StringUtil.PadRight("Place", keyLen), "Alternate\n")
         for key,value in pairs(places) do
-            local altLocations = kgutil.filter(kgutil.keys(value.locations), function(item) return item.value ~= "IN" end)
-            local altLocString = kgutil.lower(table.concat(altLocations, ", "))
+            local altLocations = Linq.Where(TableUtil.Keys(value.locations), function(key, value) return value ~= "IN" end)
+            local altLocString = StringUtil.Lower(table.concat(altLocations, ", "))
             if #altLocations > 0 then
                 altLocString = "$1[$8" .. altLocString .. "$1]"
             end
             help = help .. string.format(
                 "  $1%s$8%s%s\n",
-                kgutil.padRight(value.name, nameLen),
-                kgutil.padRight(kgutil.lower(key), keyLen),
+                StringUtil.PadRight(value.name, nameLen),
+                StringUtil.PadRight(StringUtil.Lower(key), keyLen),
                 altLocString)
         end
         return help

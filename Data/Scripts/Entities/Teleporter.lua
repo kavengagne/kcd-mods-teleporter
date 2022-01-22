@@ -1,14 +1,15 @@
-Script.ReloadScript("Scripts/kgmod-teleport-places.lua")
-Script.ReloadScript("Scripts/kgutil-main.lua")
+Script.ReloadScript("Scripts/Utils/LogUtil.lua")
+Script.ReloadScript("Scripts/Mod/TeleportPlaces.lua")
+
 
 Teleporter =
 {
     Properties =
     {
-        Places = teleport_places,
+        Places = TeleportPlaces,
     },
 }
 
 function Teleporter:OnInit()
-    kgutil.logInfo("Teleporter Initialized. Type 'tp ?' for information.")
+    LogUtil.LogInfo("Teleporter Initialized. Type 'tp ?' for information.")
 end
