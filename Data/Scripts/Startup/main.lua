@@ -1,12 +1,11 @@
 Script.ReloadScript("Scripts/Utils/LogUtil.lua")
 Script.ReloadScript("Scripts/Mod/QuickSave.lua")
-Script.ReloadScript("Scripts/Mod/TeleportPlaces.lua")
 Script.ReloadScript("Scripts/Mod/Teleport.lua")
 Script.ReloadScript("Scripts/Mod/TeleportHelp.lua")
 
 
-local help_teleport = TeleportHelp.generateTeleportHelp(TeleportPlaces)
-local help_teleport_dismount = TeleportHelp.generateDismountTeleportHelp(TeleportPlaces)
+local help_teleport = TeleportHelp.generateTeleportHelp()
+local help_teleport_dismount = TeleportHelp.generateDismountTeleportHelp()
 local help_teleport_create = TeleportHelp.generateCreateTeleportHelp()
 local help_teleport_remove = TeleportHelp.generateRemoveTeleportHelp()
 

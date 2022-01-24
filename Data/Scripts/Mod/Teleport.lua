@@ -23,20 +23,20 @@ local function addPlace(places, keywords, position)
     local terms = StringUtil.Split(StringUtil.Upper(keywords))
     local place = terms[1]
     local location = terms[2]
-    local exact = places[place]
+    local exact = Linq.First(places, function(k, v) return v.place == place end)
     if exact ~= nil then
         if location == nil then
             location = "IN"
         end
         exact.locations[location] = position
     else
-        places[place] = {
+        table.insert(places, {
             place = StringUtil.Upper(place),
             name = StringUtil.Capitalize(place),
             locations = {
                 IN = position
             }
-        }
+        })
     end
 end
 
@@ -46,7 +46,7 @@ local function findPlace(places, keywords)
     local place = terms[1]
     local location = terms[2]
     local found = {}
-    local exact = places[place]
+    local exact = Linq.First(places, function(k, v) return v.place == place end)
     if exact ~= nil then -- exact match
         if location ~= nil then
             if exact.locations[location] ~= nil then
@@ -57,13 +57,13 @@ local function findPlace(places, keywords)
         end
     else -- starts with
         place = string.format("^%s", place) -- startswith matcher
-        for key,value in pairs(places) do
-            if StringUtil.Upper(key):find(place) ~= nil then
+        for index,value in ipairs(places) do
+            if StringUtil.Upper(value.place):find(place) ~= nil then
                 if location ~= nil then
                     if value.locations[location] ~= nil then
                         table.insert(found, makePlace(value, location, false))
                     end
-                elseif exact.locations["IN"] ~= nil then
+                elseif value.locations["IN"] ~= nil then
                     table.insert(found, makePlace(value, "IN", false))
                 end
             end
@@ -98,7 +98,7 @@ Teleport = {
         end
         local found = findPlace(places, keywords)
         if #found > 1 then
-            LogUtil.LogError("Too many locations found: %s.", table.concat(Linq.Select(found, function(item) return item.name end), ", "))
+            LogUtil.LogError("Too many locations found: %s.", table.concat(Linq.Select(found, function(k, v) return v.name end), ", "))
         elseif #found < 1 then
             LogUtil.LogError("Place not found. Type 'tpl' for the list of supported places.")
         elseif player.human:IsMounted() then
@@ -146,15 +146,16 @@ Teleport = {
         end
         local found = findPlace(places, keywords)
         if #found > 1 then
-            LogUtil.LogError("Too many locations found: %s.", table.concat(Linq.Select(found, function(item) return item.name end), ", "))
+            LogUtil.LogError("Too many locations found: %s.", table.concat(Linq.Select(found, function(k, v) return v.place end), ", "))
         elseif #found < 1 then
             LogUtil.LogError("Place not found. Type 'tpl' for the list of supported places.")
         elseif not found[1].isExact then
             LogUtil.LogError("Place name must be exact. Type 'tpl' for the list of supported places.")
         else
-            places[found[1].place] = nil
+            local place = found[1].place
+            local index = TableUtil.Index(Linq.Select(places, function(k, v) return v.place end), place)
+            table.remove(places, index)
             LogUtil.LogInfo("Teleport place removed: %s", StringUtil.Capitalize(keywords))
-            Dump(getTeleporterInstance().Properties.Places)
         end
     end,
     
@@ -163,7 +164,7 @@ Teleport = {
         local places = getTeleporterInstance().Properties.Places
         local help = TeleportHelp.generateTeleportPlaces(places)
         local tokens = StringUtil.Split(help, "[^\n]+")
-        for k,v in pairs(tokens) do
+        for i,v in ipairs(tokens) do
             LogUtil.Print(v)
         end
     end,
@@ -183,16 +184,14 @@ Teleport = {
         LogUtil.LogInfo("Teleporter Entity")
         LogUtil.LogInfo("Name: %s (%d)", entity:GetName(), tostring(entity:GetRawId()))
         LogUtil.LogInfo("Locations:")
-        for place,tbl in pairs(entity.Properties.Places) do
-            local coords = Linq.Select(tbl.locations, function(loc)
-                return Util.FormatCoords(loc.x, loc.y, loc.z)
-            end)
+        for index,place in ipairs(entity.Properties.Places) do
+            local coords = Linq.Select(place.locations, function(idx, loc) return Util.FormatCoords(loc.x, loc.y, loc.z) end)
             local locations = {}
             for k,v in pairs(coords) do
                 table.insert(locations, string.format("%s = %s", k, v))
             end
             local locs = table.concat(locations, ", ")
-            LogUtil.LogInfo("%s = (%s)", tostring(place), locs)
+            LogUtil.LogInfo("%s = (%s)", place.place, locs)
         end
     end,
     

@@ -23,33 +23,33 @@ local seeAlso = "$3See also:\n" ..
 
 TeleportHelp = {
     generateTeleportPlaces = function(places)
-        local nameLen = TableUtil.Max(Linq.Select(TableUtil.Values(places, "name"), string.len)) + 2
-        local keyLen = TableUtil.Max(Linq.Select(TableUtil.Keys(places), string.len)) + 2
+        local nameLen = TableUtil.Max(Linq.Select(places, function (_, place) return string.len(place.name) end)) + 2
+        local keyLen = TableUtil.Max(Linq.Select(places, function(_, place) return string.len(place.place) end)) + 2
         local help = "$3Supported places (case insensitive).\n\n" ..
                      string.format("  $3%s%s%s", StringUtil.PadRight("Name", nameLen), StringUtil.PadRight("Place", keyLen), "Alternate\n")
-        for key,value in pairs(places) do
-            local altLocations = Linq.Where(TableUtil.Keys(value.locations), function(key, value) return value ~= "IN" end)
+        for index,place in ipairs(places) do
+            local altLocations = Linq.Where(TableUtil.Keys(place.locations), function(key, value) return value ~= "IN" end)
             local altLocString = StringUtil.Lower(table.concat(altLocations, ", "))
             if #altLocations > 0 then
                 altLocString = "$1[$8" .. altLocString .. "$1]"
             end
             help = help .. string.format(
                 "  $1%s$8%s%s\n",
-                StringUtil.PadRight(value.name, nameLen),
-                StringUtil.PadRight(StringUtil.Lower(key), keyLen),
+                StringUtil.PadRight(place.name, nameLen),
+                StringUtil.PadRight(StringUtil.Lower(place.place), keyLen),
                 altLocString)
         end
         return help
     end,
     
-    generateTeleportHelp = function(places)
+    generateTeleportHelp = function()
         return tpSyntax ..
                "$3Teleports the player to the given place.\n" ..
                "$3Type $1'tpl'$3 for the list of locations.\n\n" ..
                seeAlso
     end,
     
-    generateDismountTeleportHelp = function(places)
+    generateDismountTeleportHelp = function()
         return tpdSyntax ..
                "$3Dismounts and Teleports the player to the given place.\n" ..
                "$3Type $1'tpl'$3 for the list of locations.\n\n" ..

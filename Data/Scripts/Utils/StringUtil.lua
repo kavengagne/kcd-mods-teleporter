@@ -1,8 +1,4 @@
-if (Script ~= nil) then
-    Script.ReloadScript("Scripts/Utils/Util.lua")
-else
-    require("Data.Scripts.Utils.Util")
-end
+Script.ReloadScript("Scripts/Utils/Util.lua")
 
 
 StringUtil = {

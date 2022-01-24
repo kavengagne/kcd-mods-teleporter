@@ -25,4 +25,12 @@ Linq = {
         end
         return result
     end,
+
+    First = function(tbl, predicate)
+        local result = Linq.Where(tbl, predicate)
+        if result ~= nil and #result > 0 then
+            return result[1]
+        end
+        return nil
+    end,
 }

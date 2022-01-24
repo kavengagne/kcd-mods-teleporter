@@ -1,3 +1,4 @@
+require("Tests.TesticlePolyfills")
 
 local function Bind(fn, ...)
     local args = {...}
@@ -51,23 +52,6 @@ local function GetLoadedModules(moduleNameExpression)
     return modules
 end
 
-local function DiscoverTests(moduleNameExpression, testNameExpression)
-    local functions = {}
-    local modules = GetLoadedModules(moduleNameExpression)
-    for _,value in ipairs(modules) do
-        local moduleTests = {}
-        for memberName,member in pairs(value.module) do
-            local isTestMember = string.match(memberName, testNameExpression)
-            if isTestMember ~= nil and type(member) == "function" then
-                table.insert(moduleTests, { name = memberName, test = member })
-            end
-        end
-        table.sort(moduleTests, function(a, b) return a.name < b.name end)
-        table.insert(functions, { name = value.name, tests = moduleTests })
-    end
-    return functions
-end
-
 local function RunTests_ShowHeader(modules)
     print("-----------------------------")
     print("Testicle Unit Testing Library")
@@ -90,6 +74,23 @@ local function RunTests_ShowFooter(results)
     print()
 end
 
+local function RunTests_Discover(moduleNameExpression, testNameExpression)
+    local functions = {}
+    local modules = GetLoadedModules(moduleNameExpression)
+    for _,value in ipairs(modules) do
+        local moduleTests = {}
+        for memberName,member in pairs(value.module) do
+            local isTestMember = string.match(memberName, testNameExpression)
+            if isTestMember ~= nil and type(member) == "function" then
+                table.insert(moduleTests, { name = memberName, test = member })
+            end
+        end
+        table.sort(moduleTests, function(a, b) return a.name < b.name end)
+        table.insert(functions, { name = value.name, tests = moduleTests })
+    end
+    return functions
+end
+
 local function RunTests_Execute(test, testName)
     local testPart = Color(testName, FgColors.Yellow)
     io.write(string.format("    %s. Running... ", testPart))
@@ -98,7 +99,7 @@ local function RunTests_Execute(test, testName)
         print(Color("Succeeded", FgColors.Green) .. ".")
     else
         print(Color("Failed", FgColors.Red) .. ".")
-        print("    " .. err)
+        print(Color("        " .. err, FgColors.Red))
     end
     return success
 end
@@ -118,7 +119,8 @@ local function RunTests_RunModule(module)
     return results
 end
 
-local function RunTests(modules)
+local function RunTests(moduleNameRegex, memberNameRegex)
+    local modules = RunTests_Discover(moduleNameRegex, memberNameRegex)
     RunTests_ShowHeader(modules)
     local results = { succeeded = 0, failed = 0 }
     for _,module in ipairs(modules) do
@@ -145,6 +147,5 @@ end
 
 Testicle = {
     RunTests = RunTests,
-    DiscoverTests = DiscoverTests,
     EqualsTable = EqualsTable
 }
