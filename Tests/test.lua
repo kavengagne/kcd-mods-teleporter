@@ -84,12 +84,6 @@ Teleport.CmdLocation()
 
 
 ---------------------------------------------
--- CmdGetStatusTeleporter
----------------------------------------------
-Teleport.CmdGetStatusTeleporter()
-
-
----------------------------------------------
 -- CmdRemoveTeleport
 ---------------------------------------------
 -- Success

@@ -17,14 +17,17 @@ local tprSyntax = "$3Syntax:\n" ..
                   "  $5tpr $1<$8place$1>\n"
 local seeAlso = "$3See also:\n" ..
                 "  $1location (loc), teleport (tp), tpdismount (tpd),\n" .. 
-                "  $1tpcreate (tpc), tpremove (tpr), tplist (tpl)\n\n" ..
-                "  $1tpinit, tpdestroy, tpstatus"
+                "  $1tpcreate (tpc), tpremove (tpr), tplist (tpl)\n\n"
 
 
 TeleportHelp = {
     generateTeleportPlaces = function(places)
         local nameLen = TableUtil.Max(Linq.Select(places, function (_, place) return string.len(place.name) end)) + 2
         local keyLen = TableUtil.Max(Linq.Select(places, function(_, place) return string.len(place.place) end)) + 2
+        LogUtil.LogDebug(places[1].place)
+        LogUtil.LogDebug(places[2].place)
+        LogUtil.LogDebug(places[3].place)
+        LogUtil.LogDebug(#places)
         local help = "$3Supported places (case insensitive).\n\n" ..
                      string.format("  $3%s%s%s", StringUtil.PadRight("Name", nameLen), StringUtil.PadRight("Place", keyLen), "Alternate\n")
         for index,place in ipairs(places) do

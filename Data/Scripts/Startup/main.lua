@@ -15,10 +15,6 @@ System.AddCCommand("qs", "QuickSave.CmdQuicksave()", "Saves the game from anywhe
 System.AddCCommand("teleport", "Teleport.CmdTeleport(%line)", help_teleport)
 System.AddCCommand("tp", "Teleport.CmdTeleport(%line)", help_teleport)
 
-System.AddCCommand("tpinit", "Teleport.CmdSpawnTeleporter()", "Spawns the Teleporter entity. This must be called first and then save the game.")
-System.AddCCommand("tpdestroy", "Teleport.CmdDestroyTeleporter()", "Destroys the Teleporter entity. This will disable the teleport mod.")
-System.AddCCommand("tpstatus", "Teleport.CmdGetStatusTeleporter()", "Displays the status of the Teleporter entity.")
-
 System.AddCCommand("tpdismount", "Teleport.CmdDismountAndTeleport(%line)", help_teleport_dismount)
 System.AddCCommand("tpd", "Teleport.CmdDismountAndTeleport(%line)", help_teleport_dismount)
 System.AddCCommand("tpcreate", "Teleport.CmdCreateTeleport(%line)", help_teleport_create)
